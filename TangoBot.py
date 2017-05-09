@@ -3,7 +3,6 @@ import requests
 import configparser
 from bs4 import BeautifulSoup
 from datetime import datetime
-from difflib import Differ
 
 
 config = configparser.ConfigParser()
@@ -16,7 +15,7 @@ baseurl='http://wikipast.epfl.ch/wikipast/'
 summary='Wikipastbot update'
 
 #Replace this using listepagesbot.py to get all page names to go through
-names=['Naissance']
+names=['NaissanceTest']
 
 # Login request
 payload={'action':'query','format':'json','utf8':'','meta':'tokens','type':'login'}
@@ -61,6 +60,7 @@ def getEntries(data):
 
 
 def isValidEntry(entry):
+    entry = entry.replace(" ", "")
     if entry[0:3] == '*[[' and (entry[3:7] + entry[8:10] + entry[11:13]).isdigit() and entry[13:15] == ']]' and entry[7] == '.' and entry[10] == '.':
         return True
     else:
@@ -69,8 +69,13 @@ def isValidEntry(entry):
 
 def removeDuplicates(entries):
 
-    finalEntries = list(set(entries)).sort(key=lambda x: datetime.strptime(cleanDate(x), '%Y%m%d'))
+    print(entries)
 
+    finalEntries = list(set(entries))
+
+    finalEntries.sort(key=lambda x: datetime.strptime(cleanDate(x), '%Y%m%d'))
+
+    print("yep")
     print(finalEntries)
 
     code2 = ''
@@ -80,11 +85,8 @@ def removeDuplicates(entries):
     print("\nAfter:\n" + code2)
 
 def cleanDate(str):
-
-    finalStr = ''
     dateStr = str.partition("/")[0]
-    finalStr.join(e for e in dateStr if e.isalnum())
-    print(finalStr)
-    return "20000203"
+    #removes all special characters
+    return ''.join(e for e in dateStr if e.isalnum())
 
 main()
