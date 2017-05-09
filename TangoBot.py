@@ -36,8 +36,6 @@ edit_cookie.update(r3.cookies)
 
 def main():
 
-    # 1. retrouver le contenu et l'imprimer
-
     for name in names:
         result = requests.post(baseurl + 'api.php?action=query&titles=' + name + '&export&exportnowrap')
         soup = BeautifulSoup(result.text, "lxml")
@@ -50,6 +48,7 @@ def main():
         entries = getEntries(dataStr)
         removeDuplicates(entries)
 
+#Returns all the entries as a list from the text data
 def getEntries(data):
     lines = data.split('\n')
     entries = []
@@ -58,7 +57,7 @@ def getEntries(data):
             entries.append(line)
     return entries
 
-
+#Checks if entry is a correctly formated entry
 def isValidEntry(entry):
     entry = entry.replace(" ", "")
     if entry[0:3] == '*[[' and (entry[3:7] + entry[8:10] + entry[11:13]).isdigit() and entry[13:15] == ']]' and entry[7] == '.' and entry[10] == '.':
@@ -67,16 +66,14 @@ def isValidEntry(entry):
         return False
 
 
+#Removes duplicates in list of entries
 def removeDuplicates(entries):
 
-    print(entries)
-
+    #Removes any duplicates
     finalEntries = list(set(entries))
 
+    #Sorts list according to date
     finalEntries.sort(key=lambda x: datetime.strptime(cleanDate(x), '%Y%m%d'))
-
-    print("yep")
-    print(finalEntries)
 
     code2 = ''
     for entry in finalEntries:
@@ -84,6 +81,7 @@ def removeDuplicates(entries):
 
     print("\nAfter:\n" + code2)
 
+#Cleans date from special characters
 def cleanDate(str):
     dateStr = str.partition("/")[0]
     #removes all special characters
