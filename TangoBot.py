@@ -4,10 +4,10 @@ import configparser
 from bs4 import BeautifulSoup
 
 config = configparser.ConfigParser()
-config = config.read('config.ini')
+config.read('config.ini')
 
-user=config['wikipast.epfl.ch']['userName']
-passw=config['wikipast.epfl.ch']['password']
+user=config['DEFAULT']['userName']
+passw=config['DEFAULT']["password"]
 baseurl='http://wikipast.epfl.ch/wikipast/'
 summary='Wikipastbot update'
 names=['Madame X','Monsieur Y']
