@@ -2,8 +2,7 @@ import requests
 import configparser
 import stringSimilarity
 from bs4 import BeautifulSoup
-from datetime import datetime
-
+from re import findall
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -36,6 +35,7 @@ edit_cookie.update(r3.cookies)
 
 def main():
 
+    #Iterating through pages
     for name in names:
         result = requests.post(baseurl + 'api.php?action=query&titles=' + name + '&export&exportnowrap')
         soup = BeautifulSoup(result.text, "lxml")
@@ -46,8 +46,12 @@ def main():
                 dataStr += primitive.string
 
         entries, nonEntries = getEntries(dataStr)
-        finalEntries = removeDuplicates(entries)
+        finalEntries = removeDuplicates(entries, name)
 
+        newContent = nonEntries + finalEntries
+        newContent.sort(key=lambda x: x[0])
+
+        updateContent('\n'.join([e for (i,e) in newContent]), name)
 #Returns all the entries as a list from the text data
 def getEntries(data):
     lines = data.split('\n')
@@ -59,12 +63,12 @@ def getEntries(data):
             entries.append((i, line))
         else:
             nonEntries.append((i, line))
-        i = i+1
-
+        i = i + 1
     return (entries, nonEntries)
 
 #Checks if entry is a correctly formated entry
 def isValidEntry(entry):
+    #Remove any spaces to get correct format
     entry = entry.replace(" ", "")
     if entry[0:3] == '*[[' and (entry[3:7] + entry[8:10] + entry[11:13]).isdigit() and entry[13:15] == ']]' and entry[7] == '.' and entry[10] == '.':
         return True
@@ -73,15 +77,42 @@ def isValidEntry(entry):
 
 
 #Removes duplicates in list of entries
-def removeDuplicates(entries):
+def removeDuplicates(entries, pageTitle):
 
     entriesNoIndex = [e for (i, e) in entries]
     duplicateIndexes = stringSimilarity.similarityPairs(entriesNoIndex)
+    entriesToRemove = []
+
+    for i in range(0, len(entries)):
+        duplicatesForI = [x for x in duplicateIndexes if i in x]
+        duplicates = list(set([(getNumberOfHyperLinks(entriesNoIndex[index], pageTitle), index) for pair in duplicatesForI for index in pair]))
+        duplicates.sort(key=lambda x: x[0])
+
+        for (_, index) in duplicates[1:]:
+            entriesToRemove.append(entries[index])
+
     finalEntries = []
+    for x in entries:
+        if x in entriesToRemove:
+            entriesToRemoveNew = []
+            found = False
+            for e in entriesToRemove:
+                if x == e and not found:
+                    found = True
+                else:
+                    entriesToRemoveNew.append(e)
+            entriesToRemove = entriesToRemoveNew
+        else:
+            finalEntries.append(x)
 
-    for i,(j, e) in range(0, len(entries)), entries:
+    return finalEntries
 
-
+def getNumberOfHyperLinks(entry, pageTitle):
+    hyperLinks = findall('\[\[(.*?)\]\]', entry)
+    hyperLinks = set([x.split('|')[0] for x in hyperLinks])
+    if pageTitle in hyperLinks:
+        hyperLinks.remove(pageTitle)
+    return len(hyperLinks)
 
 #Cleans date from special characters
 def cleanDate(str):
@@ -89,4 +120,8 @@ def cleanDate(str):
     #removes all special characters
     return ''.join(e for e in dateStr if e.isalnum())
 
+def updateContent(content, name):
+    payload = {'action': 'edit', 'assert': 'user', 'format': 'json', 'utf8': '', 'text': content, 'summary': summary,
+               'title': name, 'token': edit_token}
+    r4 = requests.post(baseurl + 'api.php', data=payload, cookies=edit_cookie)
 main()

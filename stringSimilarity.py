@@ -81,4 +81,4 @@ def similarityPairs(baseStrings):
             if i != j and cosine_similarites[i][j] > threshold1:
                 duplicatePairs.append((i, j))
 
-    print(duplicatePairs)
+    return duplicatePairs
