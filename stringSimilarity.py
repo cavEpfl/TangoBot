@@ -6,7 +6,6 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import FrenchStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
-from itertools import takewhile
 
 #Stemming is the process of linguistic normalisation,
 # in which the variant forms of a word are reduced to a common form
@@ -89,13 +88,10 @@ def similarityPairs(baseStrings):
 
     duplicatePairs = []
 
-    #Only need to iterate on half of list so we don't count same pairs twice
-    halfLength = int(math.floor(setLength/2))
-
     #Creation of Index Pairs satisfying threshold
-    for i in range(0, halfLength):
+    for i in range(0, setLength):
         for j in range(0, setLength):
             if i != j and cosine_similarites[i][j] > threshold1:
                 duplicatePairs.append((i, j))
 
-    return duplicatePairs
+    return list(set([tuple(sorted(item)) for item in duplicatePairs]))

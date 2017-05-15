@@ -14,7 +14,7 @@ baseurl='http://wikipast.epfl.ch/wikipast/'
 summary='Wikipastbot update'
 
 #Replace this using listepagesbot.py to get all page names to go through
-names=['NaissanceTest']
+names=['TangoBotTest']
 
 # Login request
 payload={'action':'query','format':'json','utf8':'','meta':'tokens','type':'login'}
@@ -75,9 +75,10 @@ def isValidEntry(entry):
     entry = entry.replace(" ", "")
     if entry[0:3] == '*[[' and (entry[3:7] + entry[8:10] + entry[11:13]).isdigit() and entry[13:15] == ']]' and entry[7] == '.' and entry[10] == '.':
         return True
+    elif entry[0:3] == '*[[' and entry[3:7].isdigit() and entry[7:12] == ']]/-.':
+        return True
     else:
         return False
-
 
 #Removes duplicates in list of entries
 def removeDuplicates(entries, pageTitle):
@@ -91,7 +92,7 @@ def removeDuplicates(entries, pageTitle):
         duplicatesForI = [x for x in duplicateIndexes if i in x]
         #For each entry in conflict the number of hyperlink is calculated
         duplicates = list(set([(getNumberOfHyperLinks(entriesNoIndex[index], pageTitle), index) for pair in duplicatesForI for index in pair]))
-        duplicates.sort(key=lambda x: x[0])
+        duplicates.sort(key=lambda x: x[0], reverse=True)
 
         #The duplicate with the most hyperlinks stays the others are removed
         for (_, index) in duplicates[1:]:
