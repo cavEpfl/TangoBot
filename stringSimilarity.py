@@ -6,6 +6,7 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import FrenchStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+from itertools import takewhile
 
 #Stemming is the process of linguistic normalisation,
 # in which the variant forms of a word are reduced to a common form
@@ -20,7 +21,6 @@ def get_tokens(entries):
         lowers = entry.lower()
         #Remove any punctuation with a translator
         translator = str.maketrans('', '', string.punctuation)
-
         token_dict[i] = lowers.translate(translator)
     return token_dict
 
@@ -35,8 +35,9 @@ def stem_tokens(tokens, stemmer):
 #Extracts all the words of a given string
 def tokenize(text):
     tokens = nltk.word_tokenize(text)
+    tokensClean = [str for str in tokens if not str.startswith("http")]
     #All the stop words are stripped away since they don't bring anymore information
-    filtered = [w for w in tokens if not w in stopwords.words('french')]
+    filtered = [w for w in tokensClean if not w in stopwords.words('french')]
     stems = stem_tokens(filtered, stemmer)
     return stems
 
