@@ -1,6 +1,6 @@
-import urllib
 import requests
 import configparser
+import stringSimilarity
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -45,17 +45,23 @@ def main():
             if primitive.string is not None:
                 dataStr += primitive.string
 
-        entries = getEntries(dataStr)
-        removeDuplicates(entries)
+        entries, nonEntries = getEntries(dataStr)
+        finalEntries = removeDuplicates(entries)
 
 #Returns all the entries as a list from the text data
 def getEntries(data):
     lines = data.split('\n')
+    i = 0
     entries = []
+    nonEntries = []
     for line in lines:
         if isValidEntry(line):
-            entries.append(line)
-    return entries
+            entries.append((i, line))
+        else:
+            nonEntries.append((i, line))
+        i = i+1
+
+    return (entries, nonEntries)
 
 #Checks if entry is a correctly formated entry
 def isValidEntry(entry):
@@ -69,17 +75,13 @@ def isValidEntry(entry):
 #Removes duplicates in list of entries
 def removeDuplicates(entries):
 
-    #Removes any duplicates
-    finalEntries = list(set(entries))
+    entriesNoIndex = [e for (i, e) in entries]
+    duplicateIndexes = stringSimilarity.similarityPairs(entriesNoIndex)
+    finalEntries = []
 
-    #Sorts list according to date
-    finalEntries.sort(key=lambda x: datetime.strptime(cleanDate(x), '%Y%m%d'))
+    for i,(j, e) in range(0, len(entries)), entries:
 
-    code2 = ''
-    for entry in finalEntries:
-        code2 += entry
 
-    print("\nAfter:\n" + code2)
 
 #Cleans date from special characters
 def cleanDate(str):
