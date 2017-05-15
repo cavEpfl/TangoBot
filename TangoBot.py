@@ -45,13 +45,16 @@ def main():
             if primitive.string is not None:
                 dataStr += primitive.string
 
+        #Seperation of valid entries and normal text
         entries, nonEntries = getEntries(dataStr)
         finalEntries = removeDuplicates(entries, name)
 
         newContent = nonEntries + finalEntries
+        #Text is reorganized in corrected order with non-entry text
         newContent.sort(key=lambda x: x[0])
 
         updateContent('\n'.join([e for (i,e) in newContent]), name)
+
 #Returns all the entries as a list from the text data
 def getEntries(data):
     lines = data.split('\n')
@@ -80,19 +83,23 @@ def isValidEntry(entry):
 def removeDuplicates(entries, pageTitle):
 
     entriesNoIndex = [e for (i, e) in entries]
+    #Duplicate Pairs are computed
     duplicateIndexes = stringSimilarity.similarityPairs(entriesNoIndex)
     entriesToRemove = []
 
     for i in range(0, len(entries)):
         duplicatesForI = [x for x in duplicateIndexes if i in x]
+        #For each entry in conflict the number of hyperlink is calculated
         duplicates = list(set([(getNumberOfHyperLinks(entriesNoIndex[index], pageTitle), index) for pair in duplicatesForI for index in pair]))
         duplicates.sort(key=lambda x: x[0])
 
+        #The duplicate with the most hyperlinks stays the others are removed
         for (_, index) in duplicates[1:]:
             entriesToRemove.append(entries[index])
 
     finalEntries = []
     for x in entries:
+        #All duplicate entries must be removed in entries
         if x in entriesToRemove:
             entriesToRemoveNew = []
             found = False
@@ -107,6 +114,7 @@ def removeDuplicates(entries, pageTitle):
 
     return finalEntries
 
+#Returns the number of hyperlinks in a given entry while ignoring the pageTitle as a valid hyperlink
 def getNumberOfHyperLinks(entry, pageTitle):
     hyperLinks = findall('\[\[(.*?)\]\]', entry)
     hyperLinks = set([x.split('|')[0] for x in hyperLinks])
@@ -120,8 +128,10 @@ def cleanDate(str):
     #removes all special characters
     return ''.join(e for e in dateStr if e.isalnum())
 
+#Updates the page online
 def updateContent(content, name):
     payload = {'action': 'edit', 'assert': 'user', 'format': 'json', 'utf8': '', 'text': content, 'summary': summary,
                'title': name, 'token': edit_token}
     r4 = requests.post(baseurl + 'api.php', data=payload, cookies=edit_cookie)
+
 main()
