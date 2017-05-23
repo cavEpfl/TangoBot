@@ -4,8 +4,6 @@ import stringSimilarity
 import Listepagesbot
 from bs4 import BeautifulSoup
 from re import findall
-from collections import OrderedDict
-
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -17,9 +15,10 @@ baseurl = 'http://wikipast.epfl.ch/wikipast/'
 summary = 'Wikipastbot update'
 
 # Replace this using listepagesbot.py to get all page names to go through
-names = Listepagesbot.getListPages()
+names = ["TangoBotTest"]  # Listepagesbot.getListPages()
 
-pagesIgnore = ["InferenceBot/CheckerBot", "Bots", "InferenceBot page test - Secundinus Aurelianus", "PageUpdaterBot", "SourceBot", "LinkBot", "ImageBot", "ChronoBot", "SPARQLBot", "FormatBot", "OrthoBot", "BioPathBot"]
+pagesIgnore = ["InferenceBot/CheckerBot", "Bots", "InferenceBot page test - Secundinus Aurelianus", "PageUpdaterBot",
+               "SourceBot", "LinkBot", "ImageBot", "ChronoBot", "SPARQLBot", "FormatBot", "OrthoBot", "BioPathBot"]
 
 # Login request
 payload = {'action': 'query', 'format': 'json', 'utf8': '', 'meta': 'tokens', 'type': 'login'}
@@ -42,6 +41,7 @@ edit_cookie.update(r3.cookies)
 def main():
     # Iterating through pages
     for name in names:
+        # Conditions
         if name in pagesIgnore:
             continue
 
@@ -81,7 +81,6 @@ def getEntries(data):
 
 # Checks if entry is a correctly formated entry
 def isValidEntry(entry):
-
     check = False
 
     # Remove any spaces to get correct format
@@ -109,6 +108,9 @@ def removeDuplicates(entries, pageTitle):
     duplicateIndexes = stringSimilarity.similarityPairs(entriesNoIndex)
     entriesToRemove = []
 
+    indexesKeep = set()
+    indexesDelete = set()
+
     finalEntries = []
 
     for i in range(0, len(entries)):
@@ -121,23 +123,21 @@ def removeDuplicates(entries, pageTitle):
 
         if len(duplicates) != 0:
 
-            (i, entry) = entries[duplicates[0][1]]
+            indexesKeep.add(duplicates[0][1])
 
-            duplicateText = entry.split()[-1]
-
-            if duplicateText != "DUPLICATE-KEEP</span>" and duplicateText != "DUPLICATE-DELETE</span>":
-                finalEntries.append((i, entry + " <span style='color:green'> DUPLICATE-KEEP</span>"))
-
-
-
-            # The duplicate with the most hyperlinks stays the others are removed
             for (_, index) in duplicates[1:]:
-                (i, entry) = entries[index]
-                duplicateText = entry.split()[-1]
-                if duplicateText != "DUPLICATE-KEEP</span>" and duplicateText != "DUPLICATE-DELETE</span>":
-                    finalEntries.append((i, entry + " <span style='color:red'> DUPLICATE-DELETE</span>"))
+                indexesDelete.add(index)
 
-    return list(OrderedDict(finalEntries[::-1]).items())[::-1]
+    for (index, (i, e)) in enumerate(entries):
+
+        if index in indexesKeep:
+            finalEntries.append((i, e + " <span style='color:green'> DUPLICATE-KEEP</span>"))
+        elif index in indexesDelete:
+            finalEntries.append((i, e + " <span style='color:red'> DUPLICATE-DELETE</span>"))
+        else:
+            finalEntries.append((i, e))
+
+    return finalEntries
 
 
 # Returns the number of hyperlinks in a given entry while ignoring the pageTitle as a valid hyperlink
