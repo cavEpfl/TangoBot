@@ -17,7 +17,9 @@ baseurl = 'http://wikipast.epfl.ch/wikipast/'
 summary = 'Wikipastbot update'
 
 # Replace this using listepagesbot.py to get all page names to go through
-names = ["TangoBotTest"]  # Listepagesbot.getListPages()
+names = Listepagesbot.getListPages()
+
+pagesIgnore = ["InferenceBot/CheckerBot", "Bots", "InferenceBot page test - Secundinus Aurelianus", "PageUpdaterBot", "SourceBot", "LinkBot", "ImageBot", "ChronoBot", "SPARQLBot", "FormatBot", "OrthoBot", "BioPathBot"]
 
 # Login request
 payload = {'action': 'query', 'format': 'json', 'utf8': '', 'meta': 'tokens', 'type': 'login'}
@@ -40,6 +42,9 @@ edit_cookie.update(r3.cookies)
 def main():
     # Iterating through pages
     for name in names:
+        if name in pagesIgnore:
+            continue
+
         result = requests.post(baseurl + 'api.php?action=query&titles=' + name + '&export&exportnowrap')
         soup = BeautifulSoup(result.text, "lxml")
         # soup=BeautifulSoup(result.text)
