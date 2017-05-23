@@ -1,6 +1,5 @@
 import nltk
 import string
-import math
 
 from nltk.corpus import stopwords
 from nltk.stem.snowball import FrenchStemmer
@@ -78,7 +77,7 @@ def similarityPairs(baseStrings):
 
     #Threshold of similarity is chosen here
     #This threshold corresponds better to the dataset of wikipast
-    threshold1 = 0.5
+    threshold1 = 0.7
 
     duplicatePairs = []
 

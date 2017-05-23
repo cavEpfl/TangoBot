@@ -15,7 +15,7 @@ baseurl = 'http://wikipast.epfl.ch/wikipast/'
 summary = 'Wikipastbot update'
 
 # Replace this using listepagesbot.py to get all page names to go through
-names = ["TangoBotTest"]  # Listepagesbot.getListPages()
+names = Listepagesbot.getListPages()
 
 pagesIgnore = ["InferenceBot/CheckerBot", "Bots", "InferenceBot page test - Secundinus Aurelianus", "PageUpdaterBot",
                "SourceBot", "LinkBot", "ImageBot", "ChronoBot", "SPARQLBot", "FormatBot", "OrthoBot", "BioPathBot"]
@@ -61,7 +61,7 @@ def main():
         # Text is reorganized in corrected order with non-entry text
         newContent.sort(key=lambda x: x[0])
 
-        #updateContent('\n'.join([e for (i, e) in newContent]), name)
+        updateContent('\n'.join([e for (i, e) in newContent]), name)
 
 
 # Returns all the entries as a list from the text data
