@@ -61,7 +61,7 @@ def main():
         # Text is reorganized in corrected order with non-entry text
         newContent.sort(key=lambda x: x[0])
 
-        updateContent('\n'.join([e for (i, e) in newContent]), name)
+        #updateContent('\n'.join([e for (i, e) in newContent]), name)
 
 
 # Returns all the entries as a list from the text data
@@ -106,7 +106,6 @@ def removeDuplicates(entries, pageTitle):
     entriesNoIndex = [e for (i, e) in entries]
     # Duplicate Pairs are computed
     duplicateIndexes = stringSimilarity.similarityPairs(entriesNoIndex)
-    entriesToRemove = []
 
     indexesKeep = set()
     indexesDelete = set()
@@ -123,10 +122,16 @@ def removeDuplicates(entries, pageTitle):
 
         if len(duplicates) != 0:
 
-            indexesKeep.add(duplicates[0][1])
+            indexFirst = duplicates[0][1]
+
+            #index1 could already need to be deleted
+            if indexFirst not in indexesDelete:
+                indexesKeep.add(duplicates[0][1])
 
             for (_, index) in duplicates[1:]:
-                indexesDelete.add(index)
+                #We shouldn't loose an entry
+                if index not in indexesKeep:
+                    indexesDelete.add(index)
 
     for (index, (i, e)) in enumerate(entries):
 
