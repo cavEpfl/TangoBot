@@ -45,16 +45,25 @@ def similarityPairs(baseStrings):
 
     setLength = len(baseStrings)
 
+    if setLength == 0:
+        return []
+
     tokens = get_tokens(baseStrings)
+
+    if len(tokens) == 0:
+        return []
 
     # Tf–idf, short for term frequency–inverse document frequency
     # reflects  how important a word is to a document in a collection or corpus.
     # The tf-idf value increases proportionally to the number of times a word appears in the document,
     # but is often offset by the frequency of the word in the corpus,
     # which helps to adjust for the fact that some words appear more frequently in general.
-    tfidf = TfidfVectorizer(tokenizer=tokenize)
-    tfs = tfidf.fit_transform(tokens.values())
-
+    try:
+        tfidf = TfidfVectorizer(tokenizer=tokenize)
+        tfs = tfidf.fit_transform(tokens.values())
+    except ValueError:
+        print(tokens)
+        print(baseStrings)
     #Cosine similarity is a measure of similarity between two non-zero vectors of
     # an inner product space that measures the cosine of the angle between them.
     cosine_similarites = []
@@ -67,22 +76,7 @@ def similarityPairs(baseStrings):
         cosine_similarites.append(linear_kernel(tfs[i:i+1], tfs).flatten())
         avgCosine += sum(cosine_similarites[i])
 
-    totalLength = setLength*setLength
-    avgCosine = avgCosine / (totalLength)
-
-    sumOfSquares = 0
-
-    #Standard deviation formula
-    for array in cosine_similarites:
-        for x in array:
-            diff = x-avgCosine
-            sumOfSquares += diff*diff
-
-    stdDeviation = math.sqrt(sumOfSquares/(totalLength-1.0))
-
     #Threshold of similarity is chosen here
-    #min=avg(sim)+α⋅σ(sim)
-    threshold = avgCosine + 0.75*stdDeviation
     #This threshold corresponds better to the dataset of wikipast
     threshold1 = 0.5
 
